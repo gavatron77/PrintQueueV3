@@ -6,13 +6,12 @@ import com.google.gson.JsonObject;
 
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import static com.gavatron.QueueV3.settings;
 import static com.gavatron.QueueV3.users;
+import static com.gavatron.QueueV3.queue;
 
 public class AddToQueue {
     static void addToQueue(Path p) {
@@ -24,6 +23,7 @@ public class AddToQueue {
             e.printStackTrace();
         }
 
+        String timeString = "";
         JsonObject pricing = new JsonObject();
         for (String s : file) {
             if (s.contains("total filament used [g] "))
@@ -34,6 +34,7 @@ public class AddToQueue {
                 else if (t.contains("h")) pricing.addProperty("hours", value);
                 else if (t.contains("m")) pricing.addProperty("minutes", value);
                 else if (t.contains("s")) pricing.addProperty("seconds", value);
+                timeString = s.split("=")[1].trim();
             }
         }
 
@@ -56,6 +57,9 @@ public class AddToQueue {
         else price += time * settings.get("morehrs").getAsDouble();
 
         {
+            SimpleDateFormat f = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            Date d = new Date();
+
             DecimalFormat format = new DecimalFormat("0.00");
             price = Double.valueOf(format.format(price));
 
@@ -73,6 +77,7 @@ public class AddToQueue {
                 JsonObject printData = new JsonObject();
                 printData.addProperty("price", price);
                 printData.addProperty("fileName", p.getFileName().toString());
+                printData.addProperty("date", f.format(d));
 
                 prices.add(printData);
                 print.add("prices", prices);
@@ -82,6 +87,15 @@ public class AddToQueue {
                 user.add("prints", prints);
                 users.add(name, user);
             }
+
+            JsonObject print = new JsonObject();
+            print.addProperty("catcard", name);
+            print.addProperty("firstname", users.get(name).getAsJsonObject().get("firstname").getAsString());
+            print.addProperty("lastname", users.get(name).getAsJsonObject().get("lastname").getAsString());
+            print.addProperty("path", p.toString());
+            print.addProperty("time", timeString);
+            print.addProperty("date", f.format(d));
+            queue.add(print);
         }
     }
 }

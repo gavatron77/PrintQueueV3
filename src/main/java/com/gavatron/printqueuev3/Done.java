@@ -1,20 +1,20 @@
-package com.gavatron;
+package com.gavatron.printqueuev3;
 
 import com.google.gson.JsonArray;
 
 import java.io.File;
 import java.util.Scanner;
 
-import static com.gavatron.QueueV3.settings;
+import static com.gavatron.printqueuev3.QueueV3.settings;
 
 public class Done {
     static void done() {
         File card = new File("");
-        JsonArray drives = settings.get("sdcards").getAsJsonArray();
+        String[] drives = settings.sdCards();
 
         while (!card.exists()) {
-            for (int i = 0; i < drives.size(); i++) {
-                if (new File(drives.get(i).getAsString()).exists()) card = new File(drives.get(i).getAsString());
+            for (String drive : drives) {
+                if (new File(drive).exists()) card = new File(drive);
             }
         }
 

@@ -1,5 +1,11 @@
-
 *.gcode
 *.json
 *.xml
 QueueV3.iml
+/out/
+/.idea/
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

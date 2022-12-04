@@ -1,40 +1,31 @@
 package com.gavatron.printqueuev3;
 
-import com.google.gson.JsonArray;
 
 import java.io.File;
-import java.util.Scanner;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Optional;
 
 import static com.gavatron.printqueuev3.QueueV3.settings;
 
 public class Done {
-    static void done() {
-        File card = new File("");
-        String[] drives = settings.sdCards();
+    public static void findAndCompleteMostRecent() {
+        Optional<File> potentialDrive;
 
-        while (!card.exists()) {
-            for (String drive : drives) {
-                if (new File(drive).exists()) card = new File(drive);
-            }
-        }
+        do {
+            potentialDrive = Arrays.stream(settings.sdCards())
+                    .map(File::new)
+                    .filter(File::exists)
+                    .findFirst();
+        } while (potentialDrive.isEmpty());
 
-        long date = 0;
-        String fileName = "";
+        File card = potentialDrive.get();
 
-        for (String file : card.list()) {
-            long d = new File(card + file).lastModified();
-            if ((d > date) && (file.contains("gcode"))) {
-                date = new File(card + file).lastModified();
-                fileName = file;
-            }
-        }
 
-        try {
-            Scanner f = new Scanner(new File(card + fileName));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(card + fileName);
+        Arrays.stream(card.list()).map(s -> card + s)
+                .map(File::new)
+                .max(Comparator.comparing(File::lastModified, Long::compare))
+                // TODO: Set to done in the queue
+                .ifPresent(System.out::println);
     }
 }

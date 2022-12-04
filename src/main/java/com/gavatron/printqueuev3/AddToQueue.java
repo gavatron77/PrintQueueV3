@@ -63,11 +63,11 @@ public class AddToQueue {
 
         User user = users.getUser(catcard);
 
-        User.Print latestPrint = user.prints().get(user.prints().size() - 1);
-        User.Print updatedPrint = new User.Print(
+        Print latestPrint = user.prints().get(user.prints().size() - 1);
+        Print updatedPrint = new Print(
                 latestPrint.material(),
                 latestPrint.purpose(),
-                User.Print.Status.QUEUED,
+                Print.Status.QUEUED,
                 p.getFileName().toString(),
                 price);
 

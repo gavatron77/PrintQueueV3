@@ -99,16 +99,16 @@ public class NewFile {
             users.addUser(catcard, user);
         }
 
-        User.Print.Material material = printAndGetFromArray("Materials", User.Print.Material.values());
-        User.Print.Purpose purpose = printAndGetFromArray("Purposes", User.Print.Purpose.values());
+        Print.Material material = printAndGetFromArray("Materials", Print.Material.values());
+        Print.Purpose purpose = printAndGetFromArray("Purposes", Print.Purpose.values());
 
-        User.Print print = new User.Print(material, purpose, User.Print.Status.IMPORTED, null, -1);
+        Print print = new Print(material, purpose, Print.Status.IMPORTED, null, -1);
         user.prints().add(print);
 
         return user;
     }
 
-    private static <T extends User.Print.InputValue> T printAndGetFromArray(String name, T[] values) {
+    private static <T extends Print.InputValue> T printAndGetFromArray(String name, T[] values) {
         T value = null;
         System.out.println(name + ": ");
         for (int i = 0; i < values.length; i++)

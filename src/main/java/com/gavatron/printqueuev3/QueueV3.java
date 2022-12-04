@@ -3,20 +3,15 @@ package com.gavatron.printqueuev3;
 import com.gavatron.webhook.Embed;
 import com.gavatron.webhook.Webhook;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.StreamSupport;
 
 import static com.gavatron.printqueuev3.AddToQueue.addToQueue;
-import static com.gavatron.printqueuev3.Done.done;
+import static com.gavatron.printqueuev3.Done.findAndCompleteMostRecent;
 import static com.gavatron.printqueuev3.NewFile.newFile;
 import static com.gavatron.printqueuev3.QueueToCard.queueToCard;
 
@@ -37,18 +32,7 @@ public class QueueV3 {
             }
         }
 
-        try {
-            queue = StreamSupport.stream(JsonParser.parseReader(Files.newBufferedReader(Path.of(".\\queue.json"))).getAsJsonArray().spliterator(), false)
-                    .map(JsonElement::getAsJsonObject)
-                    .map(QueueEntry::parseJson)
-                    .toList();
-        } catch (Exception e) {
-            try {
-                new File(".\\queue.json").createNewFile();
-            } catch (Exception ee) {
-                sendError(e, "Failed to create queue.json");
-            }
-        }
+        queue = QueueEntry.readFromQueueFile(Path.of("./queue.json"));
 
         if (args.length == 0) {
             System.out.println("1: Email\n2: Pickup\n3: Charge");
@@ -67,7 +51,7 @@ public class QueueV3 {
             }
         } else if (args.length == 1) {
             switch (args[0]) {
-                case "done" -> done();
+                case "done" -> findAndCompleteMostRecent();
                 case "card" -> queueToCard();
             }
         } else if (args.length == 2) {
@@ -79,29 +63,6 @@ public class QueueV3 {
 
         users.write(Path.of(".\\users.json"));
         writeFile(".\\queue.json", queue.stream().map(QueueEntry::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll).toString());
-    }
-
-    static String parseFile(String s) {
-        String e = "";
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) == '\\') e += "\\\\";
-            else e += s.charAt(i);
-        }
-
-        return e;
-    }
-
-
-    static JsonObject readJsonFile(String p) {
-        JsonObject file;
-
-        try {
-            file = JsonParser.parseReader(new FileReader(p)).getAsJsonObject();
-        } catch (Exception e) {
-            return null;
-        }
-
-        return file;
     }
 
     static String getErrorText(Exception err) {

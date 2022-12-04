@@ -1,12 +1,19 @@
 package com.gavatron.printqueuev3;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public record QueueEntry(String catcard, String firstName, String lastName, Path path, String time, Date date) {
     public QueueEntry(String catcard, UserDatabase userList, Path path, String time, Date date) {
@@ -42,5 +49,23 @@ public record QueueEntry(String catcard, String firstName, String lastName, Path
                 Path.of(object.get("path").getAsString()),
                 object.get("time").getAsString(),
                 date);
+    }
+
+    public static List<QueueEntry> readFromQueueFile(Path path) {
+        try {
+            return StreamSupport.stream(JsonParser.parseReader(Files.newBufferedReader(path)).getAsJsonArray().spliterator(), false)
+                    .map(JsonElement::getAsJsonObject)
+                    .map(QueueEntry::parseJson)
+                    .toList();
+        } catch (Exception e) {
+            try {
+                Files.createFile(path);
+                return new ArrayList<>();
+            } catch (Exception ee) {
+                QueueV3.sendError(e, "Failed to create queue.json");
+            }
+        }
+        // Not reachable?
+        return null;
     }
 }
